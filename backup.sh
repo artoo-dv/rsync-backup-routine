@@ -60,9 +60,6 @@ hdparm -S 0 /dev/sda >> "${LOG_FILE}" 2>&1
 # Log the spin-up count before starting the backup
 log_spinup_count
 
-# Trap to ensure the lock file is released even if the script is interrupted
-trap 'rm -f "${LOCK_FILE}"' EXIT
-
 # Loop through each directory to back up
 for DIR in "${DIRECTORIES[@]}"; do
   log "Processing directory: ${DIR}"
@@ -132,4 +129,4 @@ log "Backup process finished."
 log "Spinning down backup disk"
 hdparm -y /dev/sda 
 
-# The lock file will be removed automatically by the trap
+# The lock is released automatically when fd 200 closes on exit
