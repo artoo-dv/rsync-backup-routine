@@ -55,7 +55,7 @@ log "Starting backup process."
 
 # Disable spindown during backup
 log "Temporarily disabling hard drive spindown"
-hdparm -S 0 /dev/sda >> "${LOG_FILE}" 2>&1
+hdparm -S 0 "${DISK}" >> "${LOG_FILE}" 2>&1
 
 # Log the spin-up count before starting the backup
 log_spinup_count
@@ -127,6 +127,6 @@ done
 log "Backup process finished."
 
 log "Spinning down backup disk"
-hdparm -y /dev/sda 
+hdparm -y "${DISK}" 
 
 # The lock is released automatically when fd 200 closes on exit
