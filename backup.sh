@@ -113,6 +113,7 @@ for DIR in "${DIRECTORIES[@]}"; do
   # Perform the backup (use -av for verbose output in the log)
   if rsync -a --delete \
     ${LINK_DEST_OPTION} \
+    --exclude=".incomplete" \
     --exclude=".cache" \
     --exclude="thumbs/**" \
     "${SOURCE_PARENT_DIR}/${DIR}/" \
