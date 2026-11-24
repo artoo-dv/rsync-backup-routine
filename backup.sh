@@ -68,6 +68,13 @@ for DIR in "${DIRECTORIES[@]}"; do
   BACKUP_PATH="${BACKUP_DIR}/${DIR}/${DATETIME}"
   LATEST_LINK="${BACKUP_DIR}/${DIR}/latest"
 
+  # Most recent COMPLETE backup (the one 'latest' points to). A resumed backup
+  # must hard-link against this, not against its own half-finished directory.
+  PREV_COMPLETE=""
+  if [ -L "${LATEST_LINK}" ] && [ -d "$(readlink -f "${LATEST_LINK}")" ]; then
+    PREV_COMPLETE="$(readlink -f "${LATEST_LINK}")"
+  fi
+
   # Ensure the backup directory for this specific directory exists
   mkdir -p "$(dirname "${BACKUP_PATH}")"
 
@@ -79,13 +86,13 @@ for DIR in "${DIRECTORIES[@]}"; do
     if [ -f "${LAST_BACKUP}/.incomplete" ]; then
       log "Resuming interrupted backup in ${LAST_BACKUP}."
       BACKUP_PATH="${LAST_BACKUP}"
-      LINK_DEST_OPTION="--link-dest=${LAST_BACKUP}"
+      LINK_DEST_OPTION="${PREV_COMPLETE:+--link-dest=${PREV_COMPLETE}}"
     else
       # Fallback: Assume the last backup is incomplete if no `.incomplete` exists but `latest` is missing
       if [ ! -L "${LATEST_LINK}" ]; then
-        log "No `.incomplete` marker found, but `latest` is missing. Assuming ${LAST_BACKUP} is incomplete."
+        log "No '.incomplete' marker found, but 'latest' is missing. Assuming ${LAST_BACKUP} is incomplete."
         BACKUP_PATH="${LAST_BACKUP}"
-        LINK_DEST_OPTION="--link-dest=${LAST_BACKUP}"
+        LINK_DEST_OPTION="${PREV_COMPLETE:+--link-dest=${PREV_COMPLETE}}"
       else
         log "Last backup directory ${LAST_BACKUP} is complete. Starting a new backup."
         BACKUP_PATH="${BACKUP_DIR}/${DIR}/${DATETIME}"
